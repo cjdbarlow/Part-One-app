@@ -1,0 +1,15 @@
+{
+  "id": "part_one",
+  "title": "Part One",
+  "applicationId": "com.jakebarlow.partone",
+  "displayName": "Part One",
+  "owner": "cjdbarlow",
+  "repository": "Part-One",
+  "branch": "gh-pages",
+  "contentPath": "",
+  "siteUrl": "https://partone.litfl.com/",
+  "entryPage": "index.html",
+  "excludedPages": ["content/downloads.html"],
+  "hiddenSelectors": [".ct-header", "#litfl-header-styles"],
+  "accentColour": "ff3478f6"
+}

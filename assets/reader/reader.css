@@ -1,0 +1,67 @@
+/* App-owned presentation rules for imported Quarto pages. */
+body[data-quarto-reader] {
+  padding-top: 0 !important;
+}
+
+body[data-quarto-reader] #quarto-header,
+body[data-quarto-reader] #quarto-sidebar,
+body[data-quarto-reader] #quarto-sidebar-glass,
+body[data-quarto-reader] #quarto-margin-sidebar,
+body[data-quarto-reader] #quarto-search,
+body[data-quarto-reader] .quarto-secondary-nav,
+body[data-quarto-reader] .quarto-navbar-tools,
+body[data-quarto-reader] .quarto-page-breadcrumbs,
+body[data-quarto-reader] .quarto-title-breadcrumbs,
+body[data-quarto-reader] .quarto-page-navigation,
+body[data-quarto-reader] nav#TOC {
+  display: none !important;
+}
+
+body[data-quarto-reader] #quarto-content {
+  padding-top: 0 !important;
+}
+
+body.qr-sidenotes-hidden .column-margin,
+body.qr-sidenotes-hidden .margin-caption,
+body.qr-sidenotes-hidden .tabset-margin-content,
+body.qr-sidenotes-hidden div.aside,
+body.qr-sidenotes-hidden aside:not(.footnotes):not(.sidebar) {
+  display: none !important;
+}
+
+@media (min-width: 768px) {
+  body.qr-sidenotes-hidden .page-columns {
+    grid-template-columns:
+      [screen-start] minmax(1rem, 1fr)
+      [screen-start-inset page-start page-start-inset body-start-outset]
+      0
+      [body-start] 1.5em
+      [body-content-start] minmax(0, 850px)
+      [body-content-end] 1.5em
+      [body-end body-end-outset page-end-inset page-end]
+      minmax(1rem, 1fr)
+      [screen-end-inset screen-end] !important;
+  }
+}
+
+body.qr-sidenotes-hidden .qr-transient-reveal {
+  display: block !important;
+  grid-column: body-content-start / body-content-end !important;
+  height: auto !important;
+  overflow: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+}
+
+mark.qr-search-highlight[data-quarto-reader-highlight] {
+  background: #ffe36e;
+  border-radius: 0.12em;
+  box-shadow: 0 0 0 0.08em #ffe36e;
+  color: inherit;
+  padding: 0;
+}
+
+mark.qr-search-highlight[data-quarto-reader-highlight="active"] {
+  background: #ffbd45;
+  box-shadow: 0 0 0 0.08em #ffbd45;
+}

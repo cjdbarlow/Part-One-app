@@ -10,6 +10,7 @@ class BookConfig {
   final List<String> excludedPages;
   final List<String> hiddenSelectors;
   final int accentColour;
+  final DisclaimerConfig? disclaimer;
 
   const BookConfig({
     required this.id,
@@ -23,6 +24,7 @@ class BookConfig {
     this.excludedPages = const [],
     this.hiddenSelectors = const [],
     this.accentColour = 0xff3478f6,
+    this.disclaimer,
   });
 
   factory BookConfig.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,11 @@ class BookConfig {
         json['accentColour'] as String? ?? 'ff3478f6',
         radix: 16,
       ),
+      disclaimer: json['disclaimer'] == null
+          ? null
+          : DisclaimerConfig.fromJson(
+              json['disclaimer'] as Map<String, dynamic>,
+            ),
     );
     config.validate();
     return config;
@@ -55,6 +62,14 @@ class BookConfig {
         siteUrl.scheme != 'https' ||
         siteUrl.host.isEmpty) {
       throw const FormatException('Invalid book configuration.');
+    }
+    final configuredDisclaimer = disclaimer;
+    if (configuredDisclaimer != null &&
+        (configuredDisclaimer.text.trim().isEmpty ||
+            configuredDisclaimer.linkText.trim().isEmpty ||
+            configuredDisclaimer.url.scheme != 'https' ||
+            configuredDisclaimer.url.host.isEmpty)) {
+      throw const FormatException('Invalid disclaimer configuration.');
     }
     for (final value in [contentPath, entryPage, ...excludedPages]) {
       final decoded = Uri.decodeComponent(value);
@@ -88,4 +103,24 @@ class BookConfig {
   bool isPageExcluded(String pagePath) => excludedPages.any(
     (excluded) => Uri.decodeComponent(excluded) == pagePath,
   );
+}
+
+class DisclaimerConfig {
+  final String text;
+  final String linkText;
+  final Uri url;
+
+  const DisclaimerConfig({
+    required this.text,
+    required this.linkText,
+    required this.url,
+  });
+
+  factory DisclaimerConfig.fromJson(Map<String, dynamic> json) {
+    return DisclaimerConfig(
+      text: json['text'] as String,
+      linkText: json['linkText'] as String,
+      url: Uri.parse(json['url'] as String),
+    );
+  }
 }

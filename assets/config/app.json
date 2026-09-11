@@ -11,5 +11,10 @@
   "entryPage": "index.html",
   "excludedPages": ["content/downloads.html"],
   "hiddenSelectors": [".ct-header", "#litfl-header-styles"],
-  "accentColour": "ff3478f6"
+  "accentColour": "ff3478f6",
+  "disclaimer": {
+    "text": "This application is an offline version of Part One, a free and open-access education resource provided by Life in the Fast Lane.\n\nPart One provides general information and discussion about medicine, health and related subjects.\n\nThe words and other content provided in this application, and in any linked materials, are not intended and should not be construed as medical advice.\n\nThe complete disclaimer is available at",
+    "linkText": "Life in the Fast Lane",
+    "url": "https://litfl.com/about/disclaimer/"
+  }
 }

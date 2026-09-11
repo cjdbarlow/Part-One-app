@@ -1,15 +1,33 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
-import '../providers/content_provider.dart';
-import '../providers/settings_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class SettingsPage extends StatelessWidget {
+import '../providers/content_provider.dart';
+
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
   @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  final _disclaimerLink = TapGestureRecognizer();
+
+  @override
+  void dispose() {
+    _disclaimerLink.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final settings = context.watch<SettingsProvider>();
     final content = context.watch<ContentProvider>();
+    final disclaimer = content.config.disclaimer;
+    _disclaimerLink.onTap = disclaimer == null
+        ? null
+        : () => launchUrl(disclaimer.url);
     final installed = content.content;
     final contentMessage =
         content.error ??
@@ -25,19 +43,7 @@ class SettingsPage extends StatelessWidget {
         child: ListView(
           children: [
             CupertinoListSection.insetGrouped(
-              header: const Text('READING'),
-              children: [
-                CupertinoListTile(
-                  title: const Text('Show sidebar'),
-                  trailing: CupertinoSwitch(
-                    value: settings.sidebarVisible,
-                    onChanged: settings.setSidebarVisible,
-                  ),
-                ),
-              ],
-            ),
-            CupertinoListSection.insetGrouped(
-              header: const Text('CONTENT'),
+              header: const Text('Content'),
               footer: contentMessage == null
                   ? null
                   : Padding(
@@ -88,6 +94,32 @@ class SettingsPage extends StatelessWidget {
                 ),
               ],
             ),
+            if (disclaimer != null)
+              CupertinoListSection.insetGrouped(
+                header: const Text('Disclaimer'),
+                footer: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(text: '${disclaimer.text} '),
+                      TextSpan(
+                        text: disclaimer.linkText,
+                        style: TextStyle(
+                          color: CupertinoColors.activeBlue.resolveFrom(
+                            context,
+                          ),
+                        ),
+                        recognizer: _disclaimerLink,
+                      ),
+                      const TextSpan(text: '.'),
+                    ],
+                  ),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: CupertinoColors.secondaryLabel.resolveFrom(context),
+                  ),
+                ),
+                children: [],
+              ),
           ],
         ),
       ),

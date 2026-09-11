@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 import 'package:path/path.dart' as path;
@@ -128,29 +129,32 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
         }
       },
       child: CupertinoPageScaffold(
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              if (content.hasContent)
-                _ReaderToolbar(
-                  title: _currentTitle(content),
-                  canGoBack: _canGoBack,
-                  sidebarVisible: settings.sidebarVisible,
-                  sidenotesVisible: settings.sidenotesVisible,
-                  onBack: _goBack,
-                  onToggleSidebar: () => unawaited(
-                    settings.setSidebarVisible(!settings.sidebarVisible),
-                  ),
-                  onSearch: content.search == null ? null : _openSearch,
-                  onToggleSidenotes: () => unawaited(
-                    settings.setSidenotesVisible(!settings.sidenotesVisible),
-                  ),
-                  onSettings: _openSettings,
+        child: Column(
+          children: [
+            if (content.hasContent)
+              _ReaderToolbar(
+                title: _currentTitle(content),
+                canGoBack: _canGoBack,
+                sidebarVisible: settings.sidebarVisible,
+                sidenotesVisible: settings.sidenotesVisible,
+                onBack: _goBack,
+                onToggleSidebar: () => unawaited(
+                  settings.setSidebarVisible(!settings.sidebarVisible),
                 ),
-              Expanded(child: _body(content, settings, isTablet)),
-            ],
-          ),
+                onSearch: content.search == null ? null : _openSearch,
+                onToggleSidenotes: () => unawaited(
+                  settings.setSidenotesVisible(!settings.sidenotesVisible),
+                ),
+                onSettings: _openSettings,
+              ),
+            Expanded(
+              child: SafeArea(
+                top: !content.hasContent,
+                bottom: false,
+                child: _body(content, settings, isTablet),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -180,18 +184,15 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
     final article = _article(content, settings);
     final readingArea = ColoredBox(
       color: CupertinoColors.white,
-      child: SafeArea(
-        top: false,
-        child: Column(
-          children: [
-            if (_navigationError case final error?)
-              _NavigationErrorBanner(
-                message: error,
-                onDismiss: () => setState(() => _navigationError = null),
-              ),
-            Expanded(child: article),
-          ],
-        ),
+      child: Column(
+        children: [
+          if (_navigationError case final error?)
+            _NavigationErrorBanner(
+              message: error,
+              onDismiss: () => setState(() => _navigationError = null),
+            ),
+          Expanded(child: article),
+        ],
       ),
     );
     final sidebar = _sidebar(content);
@@ -387,61 +388,86 @@ class _ReaderToolbar extends StatelessWidget {
   final VoidCallback onSettings;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-    decoration: BoxDecoration(
-      color: CupertinoTheme.of(context).barBackgroundColor,
-      border: Border(
-        bottom: BorderSide(
-          width: .5,
-          color: CupertinoDynamicColor.resolve(AppColours.separator, context),
+  Widget build(BuildContext context) {
+    final safePadding = MediaQuery.paddingOf(context);
+    final horizontalInset = math.max(safePadding.left, safePadding.right);
+    // Reserve equal space for the three trailing buttons on both sides.
+    const controlsWidth = 3 * _ToolbarButton.extent;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: CupertinoTheme.of(context).barBackgroundColor,
+        border: Border(
+          bottom: BorderSide(
+            width: .5,
+            color: CupertinoDynamicColor.resolve(AppColours.separator, context),
+          ),
         ),
       ),
-    ),
-    child: SizedBox(
-      height: 52,
-      child: Row(
-        children: [
-          if (canGoBack)
-            _ToolbarButton(
-              label: 'Back in article',
-              icon: CupertinoIcons.back,
-              onPressed: onBack,
+      child: SafeArea(
+        left: false,
+        right: false,
+        bottom: false,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalInset),
+          child: SizedBox(
+            height: 52,
+            child: Row(
+              children: [
+                SizedBox(
+                  width: controlsWidth,
+                  child: Row(
+                    children: [
+                      if (canGoBack)
+                        _ToolbarButton(
+                          label: 'Back in article',
+                          icon: CupertinoIcons.back,
+                          onPressed: onBack,
+                        ),
+                      _ToolbarButton(
+                        label: sidebarVisible ? 'Hide sidebar' : 'Show sidebar',
+                        icon: CupertinoIcons.sidebar_left,
+                        onPressed: onToggleSidebar,
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+                _ToolbarButton(
+                  label: 'Search book',
+                  icon: CupertinoIcons.search,
+                  onPressed: onSearch,
+                ),
+                _ToolbarButton(
+                  label: sidenotesVisible
+                      ? 'Hide margin content'
+                      : 'Show margin content',
+                  icon: CupertinoIcons.text_badge_minus,
+                  onPressed: onToggleSidenotes,
+                ),
+                _ToolbarButton(
+                  label: 'Open settings',
+                  icon: CupertinoIcons.settings,
+                  onPressed: onSettings,
+                ),
+              ],
             ),
-          _ToolbarButton(
-            label: sidebarVisible ? 'Hide sidebar' : 'Show sidebar',
-            icon: CupertinoIcons.sidebar_left,
-            onPressed: onToggleSidebar,
           ),
-          Expanded(
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-          _ToolbarButton(
-            label: 'Search book',
-            icon: CupertinoIcons.search,
-            onPressed: onSearch,
-          ),
-          _ToolbarButton(
-            label: sidenotesVisible
-                ? 'Hide margin content'
-                : 'Show margin content',
-            icon: CupertinoIcons.text_badge_minus,
-            onPressed: onToggleSidenotes,
-          ),
-          _ToolbarButton(
-            label: 'Open settings',
-            icon: CupertinoIcons.settings,
-            onPressed: onSettings,
-          ),
-        ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _ToolbarButton extends StatelessWidget {
@@ -451,6 +477,8 @@ class _ToolbarButton extends StatelessWidget {
     required this.onPressed,
   });
 
+  static const extent = 44.0;
+
   final String label;
   final IconData icon;
   final VoidCallback? onPressed;
@@ -459,11 +487,14 @@ class _ToolbarButton extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
     label: label,
     button: true,
-    child: CupertinoButton(
-      minimumSize: const Size(44, 44),
-      padding: EdgeInsets.zero,
-      onPressed: onPressed,
-      child: Icon(icon, size: 21, semanticLabel: null),
+    child: SizedBox(
+      width: extent,
+      child: CupertinoButton(
+        minimumSize: const Size(extent, extent),
+        padding: EdgeInsets.zero,
+        onPressed: onPressed,
+        child: Icon(icon, size: 21, semanticLabel: null),
+      ),
     ),
   );
 }

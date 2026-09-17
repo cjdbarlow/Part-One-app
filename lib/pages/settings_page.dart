@@ -27,7 +27,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final disclaimer = content.config.disclaimer;
     _disclaimerLink.onTap = disclaimer == null
         ? null
-        : () => launchUrl(disclaimer.url);
+        : () => launchUrl(disclaimer.url, mode: LaunchMode.externalApplication);
     final installed = content.content;
     final contentMessage =
         content.error ??
